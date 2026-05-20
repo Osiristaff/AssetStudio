@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 
 namespace AssetStudio
 {
@@ -132,8 +131,8 @@ namespace AssetStudio
                 {
                     try
                     {
-                        var matrix = Matrix3x2.CreateScale(m_Sprite.m_PixelsToUnits);
-                        matrix *= Matrix3x2.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y);
+                        var matrix = System.Numerics.Matrix4x4.CreateScale(m_Sprite.m_PixelsToUnits, m_Sprite.m_PixelsToUnits, 0);
+                        matrix *= System.Numerics.Matrix4x4.CreateTranslation(m_Sprite.m_Rect.width * m_Sprite.m_Pivot.X - textureRectOffset.X, m_Sprite.m_Rect.height * m_Sprite.m_Pivot.Y - textureRectOffset.Y, 0);
                         var triangles = GetTriangles(m_Sprite.m_RD);
                         var points = triangles.Select(x => x.Select(y => new PointF(y.X, y.Y)));
                         var pathBuilder = new PathBuilder(matrix);
@@ -151,27 +150,16 @@ namespace AssetStudio
                                 AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
                             }
                         };
-                        if (triangles.Length < 1024)
+                        var rectP = new RectanglePolygon(0, 0, rect.Width, rect.Height);
+                        try
                         {
-                            var rectP = new RectangularPolygon(0, 0, rect.Width, rect.Height);
-                            try
-                            {
-                                spriteImage.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, rectP.Clip(path.Clip())));
-                                spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
-                                return spriteImage;
-                            }
-                            catch (ArgumentOutOfRangeException)
-                            {
-                                // ignored
-                            }
-                        }
-                        using (var mask = new Image<Bgra32>(rect.Width, rect.Height, SixLabors.ImageSharp.Color.Black))
-                        {
-                            mask.Mutate(x => x.Fill(options, SixLabors.ImageSharp.Color.Red, path));
-                            var brush = new ImageBrush(mask);
-                            spriteImage.Mutate(x => x.Fill(options, brush));
+                            spriteImage.Mutate(x => x.Paint(options, c => c.Fill(Brushes.Solid(SixLabors.ImageSharp.Color.Red), rectP.Clip(path.Clip()))));
                             spriteImage.Mutate(x => x.Flip(FlipMode.Vertical));
                             return spriteImage;
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            // ignored
                         }
                     }
                     catch (Exception e)

@@ -21,14 +21,14 @@ namespace AssetStudio
                 case ImageFormat.Bmp:
                     image.Save(stream, new BmpEncoder
                     {
-                        BitsPerPixel = BmpBitsPerPixel.Pixel32,
+                        BitsPerPixel = BmpBitsPerPixel.Bit32,
                         SupportTransparency = true
                     });
                     break;
                 case ImageFormat.Tga:
                     image.Save(stream, new TgaEncoder
                     {
-                        BitsPerPixel = TgaBitsPerPixel.Pixel32,
+                        BitsPerPixel = TgaBitsPerPixel.Bit32,
                         Compression = TgaCompression.None
                     });
                     break;
@@ -36,7 +36,6 @@ namespace AssetStudio
                     image.Save(stream, new WebpEncoder
                     {
                         FileFormat = WebpFileFormatType.Lossless,
-                        Quality = 50
                     });
                     break;
             }
